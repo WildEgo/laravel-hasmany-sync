@@ -2,7 +2,6 @@
 
 namespace Fliva\LaravelHasManySync;
 
-use App\Models\Member;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Concerns\InteractsWithPivotTable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,7 +29,6 @@ class ServiceProvider extends BaseServiceProvider
 
         HasMany::macro('sync', function (array $ids, $deleting = true, bool $syncRelateKey = true) use ($that) {
             /** @var HasMany $this */
-
             $changes = [
                 'created' => [], 'deleted' => [], 'updated' => [],
             ];
@@ -73,15 +71,15 @@ class ServiceProvider extends BaseServiceProvider
 
             // Build the set of records to create or update in batch
             $records = Arr::map(array_merge($create, $update),
-                fn($attributes, $key) => array_merge($attributes, [
-                    $relatedKeyName => $key,
+                fn ($attributes, $key) => array_merge($attributes, [
+                    $relatedKeyName => $attributes[$relatedKeyName],
                     $foreignKeyName => $parentKey,
                 ])
             );
 
             // Avoids synchronization of the key of the related model.
             if (! $syncRelateKey) {
-                $records = array_map(fn($record) => Arr::except($record, $relatedKeyName), $records);
+                $records = array_map(fn ($record) => Arr::except($record, $relatedKeyName), $records);
             }
 
             // Do the insert or update batch
